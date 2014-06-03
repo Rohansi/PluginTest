@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using PluginCommon;
 
 namespace PluginTest
@@ -68,12 +67,20 @@ namespace PluginTest
         {
             lock (_registeredTypes)
             {
-                var types = _enumerator.Enumerate<T>(FileName).ToList();
+                var types = new List<string>();
 
-                foreach (var type in types)
+                foreach (var type in _enumerator.Enumerate<T>(FileName))
                 {
+                    if (string.IsNullOrWhiteSpace(type))
+                    {
+                        Console.WriteLine("ERROR: Attempt to add invalid type");
+                        continue;
+                    }
+
                     var typeCopy = type;
                     factory.Add(type, args => (T)_appDomain.CreateInstanceFromAndUnwrap(FileName, typeCopy, false, 0, null, args, null, null));
+
+                    types.Add(type);
                 }
 
                 _registeredTypes.Add(factory, types);

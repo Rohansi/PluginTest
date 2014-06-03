@@ -25,7 +25,6 @@ namespace PluginTest
             PluginManager.Load("PluginA.dll");
 
             var a = new PluginRoom("PluginA.TestRoom");
-            Console.WriteLine(a);
             a.Send("11111111");
 
             PluginManager.Unload("PluginA.dll");
@@ -43,7 +42,14 @@ namespace PluginTest
 
             PluginManager.Unload("PluginA.dll");
 
-            Console.WriteLine(string.Join("\n", AppDomain.CurrentDomain.GetAssemblies().Select(assembly => assembly.FullName.Substring(0, 40))));
+            Console.WriteLine(string.Join("\n", AppDomain.CurrentDomain.GetAssemblies().Select(assembly =>
+            {
+                if (assembly == null)
+                    return "ERROR: assembly is null";
+                if (assembly.FullName == null)
+                    return "ERROR: Assembly.FullName is null";
+                return assembly.FullName.Substring(0, 40);
+            })));
         }
     }
 }
