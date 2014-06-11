@@ -36,7 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IRoom.cs" />
-    <Compile Include="TypeEnumerator.cs" />
+    <Compile Include="PluginBridge.cs" />
     <Compile Include="PluginRoomBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

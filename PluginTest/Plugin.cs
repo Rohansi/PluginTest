@@ -9,12 +9,14 @@ namespace PluginTest
         public string FileName { get; private set; }
 
         private AppDomain _appDomain;
-        private TypeEnumerator _enumerator;
+        private PluginBridge _bridge;
         private Dictionary<dynamic, List<string>> _registeredTypes; 
 
         public Plugin(string assemblyFileName)
         {
             FileName = assemblyFileName;
+
+            _registeredTypes = new Dictionary<dynamic, List<string>>();
 
             try
             {
@@ -27,10 +29,9 @@ namespace PluginTest
                     Console.WriteLine(exception); // TODO: log
                 };
 
-                var enumeratorType = typeof(TypeEnumerator);
-                _enumerator = (TypeEnumerator)_appDomain.CreateInstanceFromAndUnwrap(enumeratorType.Assembly.Location, enumeratorType.FullName);
-
-                _registeredTypes = new Dictionary<dynamic, List<string>>();
+                var bridgeType = typeof(PluginBridge);
+                _bridge = (PluginBridge)_appDomain.CreateInstanceFromAndUnwrap(bridgeType.Assembly.Location, bridgeType.FullName);
+                _bridge.LoadAssembly(FileName);
             }
             catch
             {
@@ -41,7 +42,7 @@ namespace PluginTest
 
         public void Dispose()
         {
-            _enumerator = null;
+            _bridge = null;
 
             lock (_registeredTypes)
             {
@@ -69,16 +70,16 @@ namespace PluginTest
             {
                 var types = new List<string>();
 
-                foreach (var type in _enumerator.Enumerate<T>(FileName))
+                foreach (var type in _bridge.EnumerateTypes<T>())
                 {
                     if (string.IsNullOrWhiteSpace(type))
                     {
                         Console.WriteLine("ERROR: Attempt to add invalid type");
                         continue;
                     }
-
+                    
                     var typeCopy = type;
-                    factory.Add(type, args => (T)_appDomain.CreateInstanceFromAndUnwrap(FileName, typeCopy, false, 0, null, args, null, null));
+                    factory.Add(type, args => _bridge.Create<T>(FileName, typeCopy, args));
 
                     types.Add(type);
                 }

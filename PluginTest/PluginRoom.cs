@@ -20,6 +20,12 @@ namespace PluginTest
 
         public void Dispose()
         {
+            if (_room != null)
+            {
+                _room.Dispose();
+                _room = null;
+            }
+
             Program.RoomFactory.Added -= TypeAdded;
             Program.RoomFactory.Removed -= TypeRemoved;
         }
@@ -32,8 +38,11 @@ namespace PluginTest
 
         private void TypeRemoved(string type)
         {
-            if (type == _roomType)
+            if (type == _roomType && _room != null)
+            {
+                _room.Dispose();
                 _room = null;
+            }
         }
 
         public void Send(string message)
